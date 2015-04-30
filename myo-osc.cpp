@@ -120,7 +120,7 @@ public:
         }
     }
   
-  void onEmgData(myo::Myo* myo, uint64_t timestamp, const int8_t* emg) override {
+  void onEmgData(myo::Myo* myo, uint64_t timestamp, const int8_t* emg) {
     osc::OutboundPacketStream p(buffer, OUTPUT_BUFFER_SIZE);
     p << osc::BeginMessage("/myo/emg")
       << MAC
@@ -132,29 +132,53 @@ public:
 
     // onArmRecognized() is called whenever Myo has recognized a setup gesture after someone has put it on their
     // arm. This lets Myo know which arm it's on and which way it's facing.
-    void onArmRecognized(myo::Myo* myo, uint64_t timestamp, myo::Arm arm, myo::XDirection xDirection)
+//    void onArmRecognized(myo::Myo* myo, uint64_t timestamp, myo::Arm arm, myo::XDirection xDirection)
+//    {
+//        onArm = true;
+//        whichArm = arm;
+//
+//		osc::OutboundPacketStream p(buffer, OUTPUT_BUFFER_SIZE);
+//		p << osc::BeginMessage("/myo/onarm")
+//        << MAC
+//        << (whichArm == myo::armLeft ? "L" : "R") << osc::EndMessage;
+//		transmitSocket->Send(p.Data(), p.Size());
+//    }
+    
+    void onArmSync(myo::Myo* myo, uint64_t timestamp, myo::Arm arm, myo::XDirection xDirection)
     {
         onArm = true;
         whichArm = arm;
-
-		osc::OutboundPacketStream p(buffer, OUTPUT_BUFFER_SIZE);
-		p << osc::BeginMessage("/myo/onarm")
+        
+        osc::OutboundPacketStream p(buffer, OUTPUT_BUFFER_SIZE);
+        p << osc::BeginMessage("/myo/onarm")
         << MAC
-        << (whichArm == myo::armLeft ? "L" : "R") << osc::EndMessage;
-		transmitSocket->Send(p.Data(), p.Size());
+        << (whichArm == myo::armLeft ? "L" : "R")
+        << osc::EndMessage;
+        transmitSocket->Send(p.Data(), p.Size());
     }
 
     // onArmLost() is called whenever Myo has detected that it was moved from a stable position on a person's arm after
     // it recognized the arm. Typically this happens when someone takes Myo off of their arm, but it can also happen
     // when Myo is moved around on the arm.
-    void onArmLost(myo::Myo* myo, uint64_t timestamp)
+//    void onArmLost(myo::Myo* myo, uint64_t timestamp)
+//    {
+//        onArm = false;
+//		osc::OutboundPacketStream p(buffer, OUTPUT_BUFFER_SIZE);
+//		p << osc::BeginMessage("/myo/onarmlost")
+//        << MAC
+//        << osc::EndMessage;
+//		transmitSocket->Send(p.Data(), p.Size());
+//    }
+    
+    void onArmUnsync(myo::Myo* myo, uint64_t timestamp)
     {
         onArm = false;
-		osc::OutboundPacketStream p(buffer, OUTPUT_BUFFER_SIZE);
-		p << osc::BeginMessage("/myo/onarmlost")
+        osc::OutboundPacketStream p(buffer, OUTPUT_BUFFER_SIZE);
+        p << osc::BeginMessage("/myo/onarmlost")
         << MAC
+        << "unsync"
         << osc::EndMessage;
-		transmitSocket->Send(p.Data(), p.Size());
+        transmitSocket->Send(p.Data(), p.Size());
     }
 
     // There are other virtual functions in DeviceListener that we could override here, like onAccelerometerData().
